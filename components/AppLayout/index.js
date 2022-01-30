@@ -17,6 +17,7 @@ export const AppLayout = ({ children }) => {
           margin: 0;
           font-family: ${fonts.base};
           background-color: black;
+          color: white;
         }
         * {
           box-sizing: border-box;

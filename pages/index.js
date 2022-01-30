@@ -1,6 +1,7 @@
 import Head from 'next/head'
 import { AppLayout } from '../components/AppLayout'
 import { ButtonLink } from '../components/ButtonLink'
+import { Logo } from '../components/Logo'
 
 export default function Home() {
   return (
@@ -11,19 +12,13 @@ export default function Home() {
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <AppLayout>
-        <img src="https://brunao77.github.io/Higher-or-Lower-Youtube/assets/logoWhite.25805ac0.png" />
+        <Logo />
         <ButtonLink href="/playGame">PLAY</ButtonLink>
       </AppLayout>
       <style jsx>
         {`
           div {
             height: 100%;
-          }
-          img {
-            width: max(30vw, 300px);
-            height: max(20vw, 200px);
-            margin-top: max(1vw, 40px);
-            margin-bottom: max(1vw, 40px);
           }
         `}
       </style>

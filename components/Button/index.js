@@ -17,7 +17,7 @@ export const Button = ({ children, onClick }) => {
             color: ${colors.primary};
             cursor: pointer;
             display: flex;
-            font-size: max(2vw, 20px);
+            font-size: max(1.5vw, 20px);
             font-weight: 600;
             padding: 8px 24px;
             transition: 0.2s;

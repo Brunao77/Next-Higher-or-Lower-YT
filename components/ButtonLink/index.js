@@ -10,8 +10,9 @@ export const ButtonLink = ({ children, onClick, href }) => {
       <style jsx>
         {`
           a {
-            width: max(10vw, 150px);
+            width: max(12vw, 250px);
             height: max(3vw, 60px);
+            text-align: center;
             align-items: center;
             justify-content: center;
             background: transparent;
@@ -26,6 +27,7 @@ export const ButtonLink = ({ children, onClick, href }) => {
             transition: 0.2s;
             user-select: none;
             text-decoration: none;
+            margin: 5px 10px;
           }
           a:active {
             transform: scale(95%);
