@@ -7,8 +7,8 @@ export const Button = ({ children, onClick }) => {
       <style jsx>
         {`
           button {
-            width: max(10vw, 150px);
-            height: max(3vw, 60px);
+            width: max(10vw, 120px);
+            height: max(3vw, 40px);
             align-items: center;
             justify-content: center;
             background: transparent;
@@ -17,17 +17,15 @@ export const Button = ({ children, onClick }) => {
             color: ${colors.primary};
             cursor: pointer;
             display: flex;
-            font-size: max(1vw, 30px);
+            font-size: max(2vw, 20px);
             font-weight: 600;
             padding: 8px 24px;
             transition: 0.2s;
             user-select: none;
+            margin: max(0.5vw, 5px) 0;
           }
           button:active {
             transform: scale(95%);
-          }
-          button > :global(svg) {
-            margin-right: 8px;
           }
           button:hover {
             background: ${colors.white};
