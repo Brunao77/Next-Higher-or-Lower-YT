@@ -1,12 +1,15 @@
 import { colors } from '../../styles/theme'
+import Link from 'next/link'
 
-export const Button = ({ children, onClick }) => {
+export const ButtonLink = ({ children, onClick, href }) => {
   return (
     <>
-      <button onClick={onClick}>{children}</button>
+      <Link href={href}>
+        <a onClick={onClick}>{children}</a>
+      </Link>
       <style jsx>
         {`
-          button {
+          a {
             width: max(10vw, 150px);
             height: max(3vw, 60px);
             align-items: center;
@@ -22,14 +25,12 @@ export const Button = ({ children, onClick }) => {
             padding: 8px 24px;
             transition: 0.2s;
             user-select: none;
+            text-decoration: none;
           }
-          button:active {
+          a:active {
             transform: scale(95%);
           }
-          button > :global(svg) {
-            margin-right: 8px;
-          }
-          button:hover {
+          a:hover {
             background: ${colors.white};
             color: ${colors.black};
           }
