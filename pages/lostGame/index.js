@@ -24,7 +24,7 @@ export default function LostGame() {
           text {
             font-size: max(2vw, 30px);
             font-weight: 600;
-            margin: 0;
+            margin-top: -20;
             padding: 0;
           }
           strong {

@@ -2,30 +2,57 @@ import { AppLayout } from '../../components/AppLayout'
 import { Button } from '../../components/Button'
 import { colors } from '../../styles/theme'
 import { VideoLayout } from '../../components/VideoLayout'
+import { getRandomItems, selectRandomVideo } from '../../helpers'
+import { useEffect, useState } from 'react'
+import { useRouter } from 'next/router'
 
-const url1 = 'https://i.ytimg.com/vi/UZspUjzm2ik/hqdefault.jpg'
-const url2 = 'https://i.ytimg.com/vi/d1GRKO2fIrs/hqdefault.jpg'
+const get2RandomItems = getRandomItems(2)
 
-// {new Intl.NumberFormat("en-US").format(lastVideo.statistics.viewCount)}
+export default function PlayGame({ videos }) {
+  const [videosPlayed, setVideosPlayed] = useState(null)
+  const [lost, setLost] = useState(false)
+  const router = useRouter()
 
-export default function PlayGame() {
+  useEffect(() => {
+    setVideosPlayed(get2RandomItems(videos))
+  }, [])
+
+  const handleClick = (higher) => {
+    const viewsGuessOption = guessOption.statistics.viewCount
+    const viewsThanOption = thanOption.statistics.viewCount
+    higher
+      ? viewsGuessOption >= viewsThanOption
+        ? setVideosPlayed(selectRandomVideo(videos, videosPlayed))
+        : router.push('/lostGame')
+      : viewsGuessOption <= viewsThanOption
+      ? setVideosPlayed(selectRandomVideo(videos, videosPlayed))
+      : router.push('/lostGame')
+  }
+
+  if (!videosPlayed) return null
+  const [guessOption, thanOption] = videosPlayed
+
   return (
     <>
       <AppLayout>
         <section>
-          <VideoLayout img={url1}>
+          <VideoLayout img={guessOption.snippet.thumbnails.high.url}>
             <div>
-              <strong>L-gante con khea cantando</strong>
-              <Button>Higher</Button>
-              <Button>Lower</Button>
+              <strong>{guessOption.snippet.title}</strong>
+              <Button onClick={() => handleClick(true)}>Higher</Button>
+              <Button onClick={() => handleClick(false)}>Lower</Button>
               <text>viewers than RTVE</text>
             </div>
           </VideoLayout>
-          <VideoLayout img={url2}>
+          <VideoLayout img={thanOption.snippet.thumbnails.high.url}>
             <div>
-              <strong>Resumen del partido final</strong>
+              <strong>{thanOption.snippet.title}</strong>
               <text>has</text>
-              <strong className="views">1.2000.4</strong>
+              <strong className="views">
+                {new Intl.NumberFormat('en-US').format(
+                  thanOption.statistics.viewCount
+                )}
+              </strong>
               <text>views</text>
             </div>
           </VideoLayout>
@@ -104,4 +131,23 @@ export default function PlayGame() {
       `}</style>
     </>
   )
+}
+
+export async function getStaticProps() {
+  let videos = []
+  let nextPageToken = ''
+  let pages = 5
+  do {
+    const url = !nextPageToken
+      ? `https://www.googleapis.com/youtube/v3/videos?part=statistics&part=snippet&chart=mostPopular&key=${process.env.API_KEY_YOUTUBE}&maxResults=200&regionCode=es`
+      : `https://www.googleapis.com/youtube/v3/videos?part=statistics&part=snippet&chart=mostPopular&key=${process.env.API_KEY_YOUTUBE}&maxResults=200&regionCode=es&pageToken=${nextPageToken}`
+    const res = await fetch(url)
+    const snapshotVideos = await res.json()
+    nextPageToken = snapshotVideos.nextPageToken
+    videos = [...videos, ...snapshotVideos.items]
+    pages--
+  } while (pages > 0 && nextPageToken)
+  return {
+    props: { videos }
+  }
 }
