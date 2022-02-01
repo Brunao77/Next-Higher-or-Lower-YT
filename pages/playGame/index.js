@@ -4,29 +4,50 @@ import { colors } from '../../styles/theme'
 import { VideoLayout } from '../../components/VideoLayout'
 import { getRandomItems, selectRandomVideo } from '../../helpers'
 import { useEffect, useState } from 'react'
+import { useUser } from '../../hooks/useUser'
 import { useRouter } from 'next/router'
+import { UserInfo } from '../../components/UserInfo'
+import { addHighScore } from '../../firebase/client'
 
 const get2RandomItems = getRandomItems(2)
 
 export default function PlayGame({ videos }) {
   const [videosPlayed, setVideosPlayed] = useState(null)
-  const [lost, setLost] = useState(false)
+  const [score, setScore] = useState(0)
+  const user = useUser()
   const router = useRouter()
-
   useEffect(() => {
     setVideosPlayed(get2RandomItems(videos))
   }, [])
 
+  const executeIfWin = () => {
+    setScore(score + 1)
+    setVideosPlayed(selectRandomVideo(videos, videosPlayed))
+  }
+
+  const executeIfLost = () => {
+    user
+      ? addHighScore({
+          avatar: user.avatar,
+          userName: user.userName,
+          highScore: score,
+          uid: user.uid
+        }).then(() => {
+          router.replace('/lostGame')
+        })
+      : router.replace('/lostGame')
+  }
+
   const handleClick = (higher) => {
-    const viewsGuessOption = guessOption.statistics.viewCount
-    const viewsThanOption = thanOption.statistics.viewCount
+    const viewsGuessOption = parseInt(guessOption.statistics.viewCount)
+    const viewsThanOption = parseInt(thanOption.statistics.viewCount)
     higher
       ? viewsGuessOption >= viewsThanOption
-        ? setVideosPlayed(selectRandomVideo(videos, videosPlayed))
-        : router.push('/lostGame')
+        ? executeIfWin()
+        : executeIfLost()
       : viewsGuessOption <= viewsThanOption
-      ? setVideosPlayed(selectRandomVideo(videos, videosPlayed))
-      : router.push('/lostGame')
+      ? executeIfWin()
+      : executeIfLost()
   }
 
   if (!videosPlayed) return null
@@ -35,6 +56,13 @@ export default function PlayGame({ videos }) {
   return (
     <>
       <AppLayout>
+        {user && (
+          <UserInfo
+            avatar={user.avatar}
+            userName={user.userName}
+            position="absolute"
+          />
+        )}
         <section>
           <VideoLayout img={guessOption.snippet.thumbnails.high.url}>
             <div>
@@ -58,8 +86,8 @@ export default function PlayGame({ videos }) {
           </VideoLayout>
         </section>
         <footer>
-          <text>High Score: 15</text>
-          <text>Score: 0</text>
+          <text className="scoreText">High Score: 15</text>
+          <text className="scoreText">Score: {score}</text>
         </footer>
       </AppLayout>
 
@@ -98,7 +126,7 @@ export default function PlayGame({ videos }) {
         }
 
         strong {
-          font-size: max(2vw, 18px);
+          font-size: max(1.5vw, 15px);
         }
 
         footer {
@@ -111,9 +139,16 @@ export default function PlayGame({ videos }) {
           height: 40px;
           width: 100%;
           padding: 0 40px 40px 40px;
+        }
+
+        .scoreText {
           font-weight: 700;
           font-size: max(1.3vw, 20px);
           line-height: 31px;
+        }
+
+        text {
+          font-size: 10px;
         }
 
         @media (max-width: 850px) {

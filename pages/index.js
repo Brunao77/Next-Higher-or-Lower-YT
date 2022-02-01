@@ -1,9 +1,20 @@
 import Head from 'next/head'
+import { useUser } from '../hooks/useUser'
 import { AppLayout } from '../components/AppLayout'
 import { ButtonLink } from '../components/ButtonLink'
 import { Logo } from '../components/Logo'
+import { loginWithGitHub } from '../firebase/client'
+import { GitHub } from '../components/Icons/GitHub'
+import { ButtonLogin } from '../components/ButtonLogin'
+import { UserInfo } from '../components/UserInfo'
 
 export default function Home() {
+  const user = useUser()
+
+  const handleClick = () => {
+    loginWithGitHub().catch((error) => console.log(error))
+  }
+
   return (
     <>
       <Head>
@@ -14,6 +25,18 @@ export default function Home() {
       <AppLayout>
         <Logo />
         <ButtonLink href="/playGame">PLAY</ButtonLink>
+        {user === null ? (
+          <ButtonLogin onClick={() => handleClick()} bg="#3d3d3d" color="#ffff">
+            <GitHub fill="#fff" width={24} height={24} />
+            Sign in with GitHub
+          </ButtonLogin>
+        ) : user === undefined ? null : (
+          <UserInfo
+            avatar={user.avatar}
+            userName={user.userName}
+            position="relative"
+          />
+        )}
       </AppLayout>
       <style jsx>
         {`

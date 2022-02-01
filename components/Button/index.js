@@ -22,7 +22,7 @@ export const Button = ({ children, onClick }) => {
             padding: 8px 24px;
             transition: 0.2s;
             user-select: none;
-            margin: max(0.5vw, 5px) 0;
+            margin: 3px 0;
           }
           button:active {
             transform: scale(95%);
