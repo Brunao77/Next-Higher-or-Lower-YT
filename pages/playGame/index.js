@@ -7,18 +7,28 @@ import { useEffect, useState } from 'react'
 import { useUser } from '../../hooks/useUser'
 import { useRouter } from 'next/router'
 import { UserInfo } from '../../components/UserInfo'
-import { addHighScore } from '../../firebase/client'
+import {
+  getUserData,
+  updateHighScore,
+  setHighScore
+} from '../../firebase/client'
 
 const get2RandomItems = getRandomItems(2)
 
 export default function PlayGame({ videos }) {
   const [videosPlayed, setVideosPlayed] = useState(null)
   const [score, setScore] = useState(0)
+  const [userData, setUserData] = useState(null)
   const user = useUser()
   const router = useRouter()
+
   useEffect(() => {
     setVideosPlayed(get2RandomItems(videos))
   }, [])
+
+  useEffect(() => {
+    user && getUserData(user.uid).then(setUserData)
+  }, [user])
 
   const executeIfWin = () => {
     setScore(score + 1)
@@ -27,14 +37,20 @@ export default function PlayGame({ videos }) {
 
   const executeIfLost = () => {
     user
-      ? addHighScore({
-          avatar: user.avatar,
-          userName: user.userName,
-          highScore: score,
-          uid: user.uid
-        }).then(() => {
-          router.replace('/lostGame')
-        })
+      ? userData
+        ? score > userData.highScore
+          ? updateHighScore(user.uid, score).then(() => {
+              router.replace('/lostGame')
+            })
+          : router.replace('/lostGame')
+        : setHighScore({
+            avatar: user.avatar,
+            userName: user.userName,
+            highScore: score,
+            uid: user.uid
+          }).then(() => {
+            router.replace('/lostGame')
+          })
       : router.replace('/lostGame')
   }
 
@@ -53,6 +69,8 @@ export default function PlayGame({ videos }) {
   if (!videosPlayed) return null
   const [guessOption, thanOption] = videosPlayed
 
+  if (!userData) return null
+
   return (
     <>
       <AppLayout>
@@ -64,6 +82,11 @@ export default function PlayGame({ videos }) {
           />
         )}
         <section>
+          <div className="content-animation">
+            <div className="animation-center">
+              <h3>VS</h3>
+            </div>
+          </div>
           <VideoLayout img={guessOption.snippet.thumbnails.high.url}>
             <div>
               <strong>{guessOption.snippet.title}</strong>
@@ -86,12 +109,30 @@ export default function PlayGame({ videos }) {
           </VideoLayout>
         </section>
         <footer>
-          <text className="scoreText">High Score: 15</text>
-          <text className="scoreText">Score: {score}</text>
+          <text className="score-text">High Score: {userData.highScore}</text>
+          <text className="score-text">Score: {score}</text>
         </footer>
       </AppLayout>
 
       <style jsx>{`
+        .content-animation {
+          position: absolute;
+          width: 100%;
+          height: 100%;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+        }
+
+        .animation-center {
+          background-color: white;
+          color: black;
+          border-radius: 100%;
+          position: absolute;
+          width: 50px;
+          height: 50px;
+        }
+
         section {
           display: flex;
           flex-direction: row;
@@ -141,14 +182,14 @@ export default function PlayGame({ videos }) {
           padding: 0 40px 40px 40px;
         }
 
-        .scoreText {
+        .score-text {
           font-weight: 700;
-          font-size: max(1.3vw, 20px);
+          font-size: max(1.3vw, 15px);
           line-height: 31px;
         }
 
         text {
-          font-size: 10px;
+          font-size: max(1vw, 10px);
         }
 
         @media (max-width: 850px) {
