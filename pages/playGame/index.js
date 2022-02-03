@@ -7,69 +7,54 @@ import { useEffect, useState } from 'react'
 import { useUser } from '../../hooks/useUser'
 import { useRouter } from 'next/router'
 import { UserInfo } from '../../components/UserInfo'
-import {
-  getUserData,
-  updateHighScore,
-  setHighScore
-} from '../../firebase/client'
+import { controlDataBase } from '../../firebase/client'
 
 const get2RandomItems = getRandomItems(2)
 
 export default function PlayGame({ videos }) {
   const [videosPlayed, setVideosPlayed] = useState(null)
   const [score, setScore] = useState(0)
-  const [userData, setUserData] = useState(null)
+  const [animationViews, setAnimationViews] = useState(false)
+  const [animationWin, setAnimationWin] = useState(null)
   const user = useUser()
   const router = useRouter()
 
   useEffect(() => {
+    console.log(videos)
     setVideosPlayed(get2RandomItems(videos))
   }, [])
 
-  useEffect(() => {
-    user && getUserData(user.uid).then(setUserData)
-  }, [user])
-
   const executeIfWin = () => {
+    setAnimationWin(true)
     setScore(score + 1)
     setVideosPlayed(selectRandomVideo(videos, videosPlayed))
   }
 
   const executeIfLost = () => {
+    setAnimationWin(false)
     user
-      ? userData
-        ? score > userData.highScore
-          ? updateHighScore(user.uid, score).then(() => {
-              router.replace('/lostGame')
-            })
-          : router.replace('/lostGame')
-        : setHighScore({
-            avatar: user.avatar,
-            userName: user.userName,
-            highScore: score,
-            uid: user.uid
-          }).then(() => {
-            router.replace('/lostGame')
-          })
+      ? controlDataBase(user, score).then(router.replace('/lostGame'))
       : router.replace('/lostGame')
   }
 
   const handleClick = (higher) => {
-    const viewsGuessOption = parseInt(guessOption.statistics.viewCount)
-    const viewsThanOption = parseInt(thanOption.statistics.viewCount)
-    higher
-      ? viewsGuessOption >= viewsThanOption
+    setAnimationViews(true)
+    const viewsGuessOption = parseInt(guessOption.views)
+    const viewsThanOption = parseInt(thanOption.views)
+    setTimeout(() => {
+      higher
+        ? viewsGuessOption >= viewsThanOption
+          ? executeIfWin()
+          : executeIfLost()
+        : viewsGuessOption <= viewsThanOption
         ? executeIfWin()
         : executeIfLost()
-      : viewsGuessOption <= viewsThanOption
-      ? executeIfWin()
-      : executeIfLost()
+      setAnimationViews(false)
+    }, 3000)
   }
 
   if (!videosPlayed) return null
   const [guessOption, thanOption] = videosPlayed
-
-  if (!userData) return null
 
   return (
     <>
@@ -83,33 +68,49 @@ export default function PlayGame({ videos }) {
         )}
         <section>
           <div className="content-animation">
-            <div className="animation-center">
-              <h3>VS</h3>
-            </div>
+            {!animationViews ? (
+              <div className="animation-center">
+                <h3>VS</h3>
+              </div>
+            ) : animationWin ? (
+              <div className="animation-center center-win">
+                <h3>V</h3>
+              </div>
+            ) : (
+              <div className="animation-center center-lost">
+                <h3>X</h3>
+              </div>
+            )}
           </div>
-          <VideoLayout img={guessOption.snippet.thumbnails.high.url}>
+          <VideoLayout img={guessOption.img}>
             <div>
-              <strong>{guessOption.snippet.title}</strong>
-              <Button onClick={() => handleClick(true)}>Higher</Button>
-              <Button onClick={() => handleClick(false)}>Lower</Button>
-              <text>viewers than RTVE</text>
+              <strong>{guessOption.title}</strong>
+              {!animationViews ? (
+                <>
+                  <Button onClick={() => handleClick(true)}>Higher</Button>
+                  <Button onClick={() => handleClick(false)}>Lower</Button>
+                </>
+              ) : (
+                <strong className="views-guess">
+                  {new Intl.NumberFormat('en-US').format(guessOption.views)}
+                </strong>
+              )}
+              <text>views than {thanOption.channel}</text>
             </div>
           </VideoLayout>
-          <VideoLayout img={thanOption.snippet.thumbnails.high.url}>
+          <VideoLayout img={thanOption.img}>
             <div>
-              <strong>{thanOption.snippet.title}</strong>
+              <strong>{thanOption.title}</strong>
               <text>has</text>
               <strong className="views">
-                {new Intl.NumberFormat('en-US').format(
-                  thanOption.statistics.viewCount
-                )}
+                {new Intl.NumberFormat('en-US').format(thanOption.views)}
               </strong>
               <text>views</text>
             </div>
           </VideoLayout>
         </section>
         <footer>
-          <text className="score-text">High Score: {userData.highScore}</text>
+          <text className="score-text">High Score: 15</text>
           <text className="score-text">Score: {score}</text>
         </footer>
       </AppLayout>
@@ -123,16 +124,37 @@ export default function PlayGame({ videos }) {
           justify-content: center;
           align-items: center;
         }
-
         .animation-center {
           background-color: white;
           color: black;
           border-radius: 100%;
           position: absolute;
-          width: 50px;
-          height: 50px;
+          width: 60px;
+          height: 60px;
+          user-select: none;
         }
-
+        .center-lost {
+          animation: mymoveLost 3s;
+        }
+        @keyframes mymoveLost {
+          from {
+            background-color: white;
+          }
+          to {
+            background-color: #ff5252;
+          }
+        }
+        .center-win {
+          animation: mymoveWin 3s;
+        }
+        @keyframes mymoveWin {
+          from {
+            background-color: white;
+          }
+          to {
+            background-color: #84ff52;
+          }
+        }
         section {
           display: flex;
           flex-direction: row;
@@ -141,7 +163,6 @@ export default function PlayGame({ videos }) {
           height: 100%;
           background-color: rgba(0, 0, 0, 0.4);
         }
-
         section::before {
           content: '';
           position: absolute;
@@ -151,7 +172,6 @@ export default function PlayGame({ videos }) {
           right: 0;
           background-color: rgba(0, 0, 0, 0.671);
         }
-
         div {
           display: flex;
           justify-content: center;
@@ -160,16 +180,13 @@ export default function PlayGame({ videos }) {
           position: relative;
           text-align: center;
         }
-
         .views {
           color: ${colors.primary};
           font-size: max(3vw, 25px);
         }
-
         strong {
           font-size: max(1.5vw, 15px);
         }
-
         footer {
           position: relative;
           display: flex;
@@ -181,22 +198,31 @@ export default function PlayGame({ videos }) {
           width: 100%;
           padding: 0 40px 40px 40px;
         }
-
         .score-text {
           font-weight: 700;
           font-size: max(1.3vw, 15px);
           line-height: 31px;
         }
-
         text {
           font-size: max(1vw, 10px);
         }
-
+        .views-guess {
+          color: ${colors.primary};
+          font-size: max(3vw, 25px);
+          animation: fadeIn 2s;
+        }
+        @keyframes fadeIn {
+          0% {
+            opacity: 0;
+          }
+          100% {
+            opacity: 1;
+          }
+        }
         @media (max-width: 850px) {
           section {
             flex-direction: column;
           }
-
           footer {
             padding: 0;
             position: absolute;
@@ -223,6 +249,14 @@ export async function getStaticProps() {
     videos = [...videos, ...snapshotVideos.items]
     pages--
   } while (pages > 0 && nextPageToken)
+  videos = videos.map((video) => {
+    return {
+      img: video.snippet.thumbnails.high.url,
+      title: video.snippet.title,
+      views: video.statistics.viewCount,
+      channel: video.snippet.channelTitle
+    }
+  })
   return {
     props: { videos }
   }

@@ -116,3 +116,18 @@ export const getUserData = async (idDoc) => {
     return null
   }
 }
+
+export const controlDataBase = (userInfo, score) => {
+  return getUserData(userInfo.uid).then((user) =>
+    !user
+      ? setHighScore({
+          avatar: userInfo.avatar,
+          userName: userInfo.userName,
+          highScore: score,
+          uid: userInfo.uid
+        })
+      : score > user.highScore
+      ? updateHighScore(userInfo.uid, score)
+      : null
+  )
+}

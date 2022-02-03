@@ -17,7 +17,7 @@ export default function Home() {
   useEffect(() => {
     getHighScores().then(setLeaderboard)
   }, [])
-  console.log(leaderboard)
+
   const handleClick = () => {
     loginWithGitHub().catch((error) => console.log(error))
   }
@@ -48,7 +48,7 @@ export default function Home() {
       <AppLayout>
         <h1>Leaderboard</h1>
         <section>
-          <ColumnTable>
+          <ColumnTable margin="100">
             <h1>Username</h1>
             {leaderboard.map((person) => (
               <div key={person.id}>
@@ -57,13 +57,13 @@ export default function Home() {
               </div>
             ))}
           </ColumnTable>
-          <ColumnTable>
+          <ColumnTable margin="100">
             <h1>Score</h1>
             {leaderboard.map((person) => (
               <strong key={person.id}>{person.highScore}</strong>
             ))}
           </ColumnTable>
-          <ColumnTable>
+          <ColumnTable margin="00">
             <h1>Date</h1>
             {leaderboard.map((person) => (
               <strong key={person.id}>{person.createdAt}</strong>
@@ -80,6 +80,9 @@ export default function Home() {
           section {
             display: flex;
             flex-direction: row;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
           }
         `}
       </style>
