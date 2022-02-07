@@ -8,7 +8,6 @@ import { GitHub } from '../components/Icons/GitHub'
 import { ButtonLogin } from '../components/ButtonLogin'
 import { UserInfo } from '../components/UserInfo'
 import { useState, useEffect } from 'react'
-import { ColumnTable } from '../components/ColumnTable'
 
 export default function Home() {
   const user = useUser()
@@ -46,43 +45,85 @@ export default function Home() {
         )}
       </AppLayout>
       <AppLayout>
-        <h1>Leaderboard</h1>
-        <section>
-          <ColumnTable margin="100">
-            <h1>Username</h1>
-            {leaderboard.map((person) => (
-              <div key={person.id}>
-                <img src={person.avatar} width="20px" height="20px" />
-                <strong>{person.userName}</strong>
-              </div>
-            ))}
-          </ColumnTable>
-          <ColumnTable margin="100">
-            <h1>Score</h1>
-            {leaderboard.map((person) => (
-              <strong key={person.id}>{person.highScore}</strong>
-            ))}
-          </ColumnTable>
-          <ColumnTable margin="00">
-            <h1>Date</h1>
-            {leaderboard.map((person) => (
-              <strong key={person.id}>{person.createdAt}</strong>
-            ))}
-          </ColumnTable>
-        </section>
+        <div>
+          <h1>Leaderboard</h1>
+          <table>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>User</th>
+                <th>Score</th>
+                <th>Date</th>
+              </tr>
+            </thead>
+            <tbody>
+              {leaderboard.map((person, index) => (
+                <tr key={person.id}>
+                  <td>{index + 1}</td>
+                  <td>
+                    <img src={person.avatar} width="20px" height="20px" />
+                    <strong>{person.userName}</strong>
+                  </td>
+                  <td>{person.highScore}</td>
+                  <td>{person.createdAt}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </AppLayout>
       <style jsx>
         {`
           div {
             display: flex;
-            flex-direction: row;
+            flex-direction: column;
           }
-          section {
-            display: flex;
-            flex-direction: row;
-            justify-content: center;
-            align-items: center;
+          h1 {
             text-align: center;
+            margin-bottom: 30px;
+          }
+          table {
+            width: 100%;
+            border-spacing: 0 0;
+            background: #213b4c;
+            color: white;
+            box-shadow: 0 0 20px #1e3344;
+            border-radius: 20px;
+            overflow: hidden;
+          }
+          th {
+            background: #0c1e28;
+            border: none;
+            margin: 0;
+            padding: 0;
+            text-align: center;
+            padding: 20px 0px 20px 0px;
+            width: 100px;
+          }
+          th:first-of-type {
+            padding: 0 30px;
+            text-align: center;
+          }
+          th:last-of-type {
+            padding: 0 30px;
+          }
+          th:nth-child(2) {
+            width: max(12vw, 100px);
+          }
+          td {
+            text-align: center;
+            padding: 10px 0px;
+          }
+          td:nth-child(1) {
+            padding: 10px 30px 10px 30px;
+          }
+          td:nth-child(2) {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+          }
+          img {
+            margin-right: 5px;
           }
         `}
       </style>
