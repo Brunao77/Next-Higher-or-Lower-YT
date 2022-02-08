@@ -7,50 +7,55 @@ import { useEffect, useState } from 'react'
 import { useUser } from '../../hooks/useUser'
 import { useRouter } from 'next/router'
 import { UserInfo } from '../../components/UserInfo'
-import { controlDataBase } from '../../firebase/client'
+import { controlDataBase, getUserData } from '../../firebase/client'
 
 const get2RandomItems = getRandomItems(2)
 
 export default function PlayGame({ videos }) {
   const [videosPlayed, setVideosPlayed] = useState(null)
   const [score, setScore] = useState(0)
-  const [animationViews, setAnimationViews] = useState(false)
-  const [animationWin, setAnimationWin] = useState(null)
+  const [animationCenter, setAnimationCenter] = useState('vs')
   const user = useUser()
   const router = useRouter()
+  const [highScore, setHighScore] = useState(0)
 
   useEffect(() => {
-    console.log(videos)
     setVideosPlayed(get2RandomItems(videos))
   }, [])
 
+  useEffect(() => {
+    user &&
+      getUserData(user.uid).then((user) => user && setHighScore(user.highScore))
+  }, [user])
+
   const executeIfWin = () => {
-    setAnimationWin(true)
-    setScore(score + 1)
-    setVideosPlayed(selectRandomVideo(videos, videosPlayed))
+    setAnimationCenter('win')
+    setTimeout(() => {
+      setAnimationCenter('vs')
+      setScore(score + 1)
+      setVideosPlayed(selectRandomVideo(videos, videosPlayed))
+    }, 3000)
   }
 
   const executeIfLost = () => {
-    setAnimationWin(false)
-    user
-      ? controlDataBase(user, score).then(router.replace('/lostGame'))
-      : router.replace('/lostGame')
+    setAnimationCenter('lost')
+    setTimeout(() => {
+      user
+        ? controlDataBase(user, score).then(router.replace('/lostGame'))
+        : router.replace('/lostGame')
+    }, 3000)
   }
 
   const handleClick = (higher) => {
-    setAnimationViews(true)
     const viewsGuessOption = parseInt(guessOption.views)
     const viewsThanOption = parseInt(thanOption.views)
-    setTimeout(() => {
-      higher
-        ? viewsGuessOption >= viewsThanOption
-          ? executeIfWin()
-          : executeIfLost()
-        : viewsGuessOption <= viewsThanOption
+    higher
+      ? viewsGuessOption >= viewsThanOption
         ? executeIfWin()
         : executeIfLost()
-      setAnimationViews(false)
-    }, 3000)
+      : viewsGuessOption <= viewsThanOption
+      ? executeIfWin()
+      : executeIfLost()
   }
 
   if (!videosPlayed) return null
@@ -68,11 +73,11 @@ export default function PlayGame({ videos }) {
         )}
         <section>
           <div className="content-animation">
-            {!animationViews ? (
+            {animationCenter === 'vs' ? (
               <div className="animation-center">
                 <h3>VS</h3>
               </div>
-            ) : animationWin ? (
+            ) : animationCenter === 'win' ? (
               <div className="animation-center center-win">
                 <h3>V</h3>
               </div>
@@ -85,7 +90,7 @@ export default function PlayGame({ videos }) {
           <VideoLayout img={guessOption.img}>
             <div>
               <strong>{guessOption.title}</strong>
-              {!animationViews ? (
+              {animationCenter === 'vs' ? (
                 <>
                   <Button onClick={() => handleClick(true)}>Higher</Button>
                   <Button onClick={() => handleClick(false)}>Lower</Button>
@@ -110,7 +115,7 @@ export default function PlayGame({ videos }) {
           </VideoLayout>
         </section>
         <footer>
-          <text className="score-text">High Score: 15</text>
+          <text className="score-text">High Score: {highScore}</text>
           <text className="score-text">Score: {score}</text>
         </footer>
       </AppLayout>
@@ -135,6 +140,7 @@ export default function PlayGame({ videos }) {
         }
         .center-lost {
           animation: mymoveLost 3s;
+          color: #fff;
         }
         @keyframes mymoveLost {
           from {
@@ -146,6 +152,7 @@ export default function PlayGame({ videos }) {
         }
         .center-win {
           animation: mymoveWin 3s;
+          color: #fff;
         }
         @keyframes mymoveWin {
           from {

@@ -9,12 +9,14 @@ import {
   getFirestore,
   Timestamp,
   collection,
-  addDoc,
   getDocs,
   getDoc,
   updateDoc,
   doc,
-  setDoc
+  setDoc,
+  query,
+  orderBy,
+  limit
 } from 'firebase/firestore'
 
 const firebaseConfig = {
@@ -61,16 +63,6 @@ export const loginWithGitHub = () => {
     .catch((error) => console.log(error))
 }
 
-export const addHighScore = ({ avatar, userName, highScore, uid }) => {
-  return addDoc(collection(db, 'scores'), {
-    avatar,
-    userName,
-    highScore,
-    uid,
-    createdAt: Timestamp.fromDate(new Date())
-  })
-}
-
 export const setHighScore = ({ avatar, userName, highScore, uid }) => {
   return setDoc(doc(db, 'scores', uid), {
     avatar,
@@ -90,20 +82,24 @@ export const updateHighScore = (id, newHighScore) => {
 
 export const getHighScores = () => {
   const colRef = collection(db, 'scores')
-  return getDocs(colRef).then((snapshot) => {
-    return snapshot.docs.map((doc) => {
-      const data = doc.data()
-      const id = doc.id
-      const { createdAt } = data
-      const date = new Date(createdAt.seconds * 1000)
-      const normalizedCreatedAt = new Intl.DateTimeFormat('es-ES').format(date)
-      return {
-        ...data,
-        id,
-        createdAt: normalizedCreatedAt
-      }
-    })
-  })
+  return getDocs(query(colRef, orderBy('highScore', 'desc'), limit(10))).then(
+    (snapshot) => {
+      return snapshot.docs.map((doc) => {
+        const data = doc.data()
+        const id = doc.id
+        const { createdAt } = data
+        const date = new Date(createdAt.seconds * 1000)
+        const normalizedCreatedAt = new Intl.DateTimeFormat('es-ES').format(
+          date
+        )
+        return {
+          ...data,
+          id,
+          createdAt: normalizedCreatedAt
+        }
+      })
+    }
+  )
 }
 
 export const getUserData = async (idDoc) => {
@@ -126,8 +122,6 @@ export const controlDataBase = (userInfo, score) => {
           highScore: score,
           uid: userInfo.uid
         })
-      : score > user.highScore
-      ? updateHighScore(userInfo.uid, score)
-      : null
+      : score > user.highScore && updateHighScore(userInfo.uid, score)
   )
 }
