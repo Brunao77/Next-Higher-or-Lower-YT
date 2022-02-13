@@ -9,14 +9,15 @@ export const UserInfo = ({ avatar, userName, position }) => {
         section {
           display: flex;
           align-items: center;
+          justify-content: center;
           background-color: #dbdbdb;
           border-radius: 10px;
           position: ${position};
           color: black;
           padding: 10px;
           font-weight: 600;
-          z-index: 100;
           margin-top: 20px;
+          z-index: 100;
         }
         img {
           margin-right: 10px;

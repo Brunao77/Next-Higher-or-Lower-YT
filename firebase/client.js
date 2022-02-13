@@ -3,7 +3,8 @@ import {
   getAuth,
   onAuthStateChanged,
   signInWithPopup,
-  GithubAuthProvider
+  GithubAuthProvider,
+  signOut
 } from 'firebase/auth'
 import {
   getFirestore,
@@ -48,6 +49,16 @@ export const authStateChanged = (onChange) => {
     const normalizedUser = user ? mapUserFromFirebaseAuthToUser(user) : null
     onChange(normalizedUser)
   })
+}
+
+export const userSignOut = () => {
+  signOut(auth)
+    .then(() => {
+      console.log('bye')
+    })
+    .catch((error) => {
+      console.log(error)
+    })
 }
 
 export const loginWithGitHub = () => {
