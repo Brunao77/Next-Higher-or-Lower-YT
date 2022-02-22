@@ -239,10 +239,11 @@ export default function PlayGame({ videos }) {
             flex-direction: column;
           }
           footer {
-            padding: 0;
+            padding: 15px;
             position: absolute;
-            top: 48%;
-            flex-direction: column-reverse;
+            top: 0%;
+            justify-content: space-between;
+            flex-direction: row;
           }
         }
       `}</style>
