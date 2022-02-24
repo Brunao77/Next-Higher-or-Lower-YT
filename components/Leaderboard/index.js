@@ -78,6 +78,7 @@ export const Leaderboard = ({ leaderboard }) => {
         }
         img {
           margin-right: 5px;
+          border-radius: 999px;
         }
       `}</style>
     </>

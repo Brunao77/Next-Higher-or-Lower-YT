@@ -16,6 +16,7 @@ import { UserInfo } from '../components/UserInfo'
 import { useState, useEffect } from 'react'
 import { AiOutlinePoweroff } from 'react-icons/ai'
 import { BsFillInfoCircleFill } from 'react-icons/bs'
+import { CgScrollV } from 'react-icons/cg'
 import { Leaderboard } from '../components/Leaderboard'
 import { GameInfo } from '../components/GameInfo'
 
@@ -96,6 +97,11 @@ export default function Home(props) {
             </p>
           </GameInfo>
         )}
+        {leaderboard.length !== 0 && (
+          <div className="scroll-icon">
+            <CgScrollV size={40} />
+          </div>
+        )}
       </AppLayout>
       {leaderboard.length !== 0 && (
         <AppLayout>
@@ -139,6 +145,19 @@ export default function Home(props) {
             font-weight: 400;
             cursor: pointer;
             margin-top: 10px;
+          }
+          .scroll-icon {
+            margin-top: 40px;
+            animation: MoveUpDown 1s linear infinite;
+          }
+          @keyframes MoveUpDown {
+            0%,
+            100% {
+              transform: translateY(0);
+            }
+            50% {
+              transform: translateY(-10px);
+            }
           }
           p {
             text-align: center;

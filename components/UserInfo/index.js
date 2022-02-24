@@ -21,6 +21,7 @@ export const UserInfo = ({ avatar, userName, position }) => {
         }
         img {
           margin-right: 10px;
+          border-radius: 999px;
         }
       `}</style>
     </>
