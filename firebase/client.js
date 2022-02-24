@@ -4,7 +4,8 @@ import {
   onAuthStateChanged,
   signInWithPopup,
   GithubAuthProvider,
-  signOut
+  signOut,
+  GoogleAuthProvider
 } from 'firebase/auth'
 import {
   getFirestore,
@@ -52,13 +53,9 @@ export const authStateChanged = (onChange) => {
 }
 
 export const userSignOut = () => {
-  signOut(auth)
-    .then(() => {
-      console.log('bye')
-    })
-    .catch((error) => {
-      console.log(error)
-    })
+  signOut(auth).catch((error) => {
+    console.log(error)
+  })
 }
 
 export const loginWithGitHub = () => {
@@ -66,6 +63,20 @@ export const loginWithGitHub = () => {
     .then((user) => {
       const { _tokenResponse } = user
       const { displayName, photoUrl } = _tokenResponse
+      return {
+        avatar: photoUrl,
+        userName: displayName
+      }
+    })
+    .catch((error) => console.log(error))
+}
+
+export const loginWithGoogle = () => {
+  return signInWithPopup(auth, new GoogleAuthProvider())
+    .then((result) => {
+      const user = result.user
+      console.log(user)
+      const { displayName, photoUrl } = user
       return {
         avatar: photoUrl,
         userName: displayName
@@ -87,7 +98,8 @@ export const setHighScore = ({ avatar, userName, highScore, uid }) => {
 export const updateHighScore = (id, newHighScore) => {
   const docRef = doc(db, 'scores', id)
   return updateDoc(docRef, {
-    highScore: newHighScore
+    highScore: newHighScore,
+    createdAt: Timestamp.fromDate(new Date())
   })
 }
 

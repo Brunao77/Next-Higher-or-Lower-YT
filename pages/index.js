@@ -3,26 +3,42 @@ import { useUser } from '../hooks/useUser'
 import { AppLayout } from '../components/AppLayout'
 import { ButtonLink } from '../components/ButtonLink'
 import { Logo } from '../components/Logo'
-import { loginWithGitHub, getHighScores, userSignOut } from '../firebase/client'
+import {
+  loginWithGitHub,
+  getHighScores,
+  userSignOut,
+  loginWithGoogle
+} from '../firebase/client'
 import { GitHub } from '../components/Icons/GitHub'
+import { Google } from '../components/Icons/Google'
 import { ButtonLogin } from '../components/ButtonLogin'
 import { UserInfo } from '../components/UserInfo'
 import { useState, useEffect } from 'react'
 import { AiOutlinePoweroff } from 'react-icons/ai'
+import { BsFillInfoCircleFill } from 'react-icons/bs'
+import { Leaderboard } from '../components/Leaderboard'
+import { GameInfo } from '../components/GameInfo'
 
 export default function Home(props) {
   const user = useUser()
   const [leaderboard, setLeaderboard] = useState([])
+  const [infoOpen, setInfoOpen] = useState(false)
 
   useEffect(() => {
     getHighScores().then(setLeaderboard)
   }, [])
 
-  const handleClick = () => {
+  const handleLoginGithub = () => {
     loginWithGitHub().catch((error) => console.log(error))
+  }
+  const handleLoginGoogle = () => {
+    loginWithGoogle().catch((error) => console.log(error))
   }
   const handleSignOutClick = () => {
     userSignOut()
+  }
+  const handleInfo = () => {
+    setInfoOpen(!infoOpen)
   }
 
   return (
@@ -36,10 +52,24 @@ export default function Home(props) {
         <Logo />
         <ButtonLink href="/playGame">PLAY</ButtonLink>
         {user === null ? (
-          <ButtonLogin onClick={() => handleClick()} bg="#3d3d3d" color="#ffff">
-            <GitHub fill="#fff" width={24} height={24} />
-            Sign in with GitHub
-          </ButtonLogin>
+          <>
+            <ButtonLogin
+              onClick={() => handleLoginGithub()}
+              bg="#3d3d3d"
+              color="#ffff"
+            >
+              <GitHub fill="#fff" width={24} height={24} />
+              Sign in with GitHub
+            </ButtonLogin>
+            <ButtonLogin
+              onClick={() => handleLoginGoogle()}
+              bg="#FF5757"
+              color="#ffff"
+            >
+              <Google fill="#fff" width={24} height={24} />
+              Sign in with Google
+            </ButtonLogin>
+          </>
         ) : user === undefined ? null : (
           <>
             <UserInfo
@@ -52,40 +82,50 @@ export default function Home(props) {
             </div>
           </>
         )}
+        <dix className="info-icon" onClick={handleInfo}>
+          <BsFillInfoCircleFill color="#fff" size={50} />
+        </dix>
+        {infoOpen && (
+          <GameInfo handleClose={handleInfo}>
+            <p>
+              Your goal is to guess if the video on the right has more or fewer
+              views than the video on the left.
+              <br />
+              If you do not log in your highscore will not be saved and you will
+              not participate in the world ranking
+            </p>
+          </GameInfo>
+        )}
       </AppLayout>
-      <AppLayout>
-        <div>
-          <h1>Leaderboard</h1>
-          <table>
-            <thead>
-              <tr>
-                <th>#</th>
-                <th>User</th>
-                <th>Score</th>
-                <th>Date</th>
-              </tr>
-            </thead>
-            <tbody>
-              {leaderboard.map((person, index) => (
-                <tr key={person.id}>
-                  <td>{index + 1}</td>
-                  <td>
-                    <img src={person.avatar} width="20px" height="20px" />
-                    <strong>{person.userName}</strong>
-                  </td>
-                  <td>{person.highScore}</td>
-                  <td>{person.createdAt}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </AppLayout>
+      {leaderboard.length !== 0 && (
+        <AppLayout>
+          <Leaderboard leaderboard={leaderboard} />
+        </AppLayout>
+      )}
       <style jsx>
         {`
           div {
             display: flex;
             flex-direction: column;
+          }
+          .info-icon {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            justify-content: center;
+            background-color: #000;
+            border-radius: 999px;
+            color: black;
+            padding: 5px;
+            font-weight: 400;
+            cursor: pointer;
+            margin-top: 10px;
+            position: absolute;
+            left: 95%;
+            top: 3%;
+            cursor: pointer;
+            width: 50px;
+            height: 50px;
           }
           .sign-out {
             display: flex;
@@ -100,52 +140,19 @@ export default function Home(props) {
             cursor: pointer;
             margin-top: 10px;
           }
-          h1 {
+          p {
             text-align: center;
-            margin-bottom: 30px;
-          }
-          table {
-            width: 100%;
-            border-spacing: 0 0;
-            background: #213b4c;
-            color: white;
-            box-shadow: 0 0 20px #1e3344;
-            border-radius: 20px;
-            overflow: hidden;
-          }
-          th {
-            background: #0c1e28;
-            border: none;
+            font-size: max(1vw, 15px);
+            font-weight: 500;
+            width: 90%;
             margin: 0;
-            padding: 0;
-            text-align: center;
-            padding: 20px 0px 20px 0px;
-            width: 100px;
           }
-          th:first-of-type {
-            padding: 0 30px;
-            text-align: center;
-          }
-          th:last-of-type {
-            padding: 0 30px;
-          }
-          th:nth-child(2) {
-            width: max(12vw, 100px);
-          }
-          td {
-            text-align: center;
-            padding: 10px 0px;
-          }
-          td:nth-child(1) {
-            padding: 10px 30px 10px 30px;
-          }
-          td:nth-child(2) {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-          }
-          img {
-            margin-right: 5px;
+          @media (max-width: 850px) {
+            .info-icon {
+              top: 0;
+              left: 0;
+              position: relative;
+            }
           }
         `}
       </style>

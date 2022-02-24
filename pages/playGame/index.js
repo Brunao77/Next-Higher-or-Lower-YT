@@ -95,6 +95,16 @@ export default function PlayGame({ videos }) {
               </div>
             )}
           </div>
+          <VideoLayout img={thanOption.img}>
+            <div>
+              <strong>{thanOption.title}</strong>
+              <text>has</text>
+              <strong className="views">
+                {new Intl.NumberFormat('en-US').format(thanOption.views)}
+              </strong>
+              <text>views</text>
+            </div>
+          </VideoLayout>
           <VideoLayout img={guessOption.img}>
             <div>
               <strong>{guessOption.title}</strong>
@@ -109,16 +119,6 @@ export default function PlayGame({ videos }) {
                 </strong>
               )}
               <text>views than {thanOption.channel}</text>
-            </div>
-          </VideoLayout>
-          <VideoLayout img={thanOption.img}>
-            <div>
-              <strong>{thanOption.title}</strong>
-              <text>has</text>
-              <strong className="views">
-                {new Intl.NumberFormat('en-US').format(thanOption.views)}
-              </strong>
-              <text>views</text>
             </div>
           </VideoLayout>
         </section>
@@ -201,6 +201,7 @@ export default function PlayGame({ videos }) {
         }
         strong {
           font-size: max(1.5vw, 15px);
+          width: max(40vw, 280px);
         }
         footer {
           position: relative;

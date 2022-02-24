@@ -4,7 +4,7 @@ export const ButtonLogin = ({ children, onClick, bg, color }) => {
       <button onClick={onClick}>{children}</button>
       <style jsx>{`
         button {
-          width: 180px;
+          width: 200px;
           justify-content: center;
           align-items: center;
           background: ${bg};
@@ -17,6 +17,7 @@ export const ButtonLogin = ({ children, onClick, bg, color }) => {
           font-weight: 100;
           padding: 10px 10px;
           transition: opacity 0.3s ease;
+          margin: 5px;
         }
         button > :global(svg) {
           margin-right: 8px;
